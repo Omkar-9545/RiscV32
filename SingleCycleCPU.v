@@ -1,4 +1,4 @@
-`timescale 1ns / 1ps
+`timescale 1ns /1ps
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -22,7 +22,11 @@
 
 module SingleCycleCPU(
     input clk,
-    input start
+    input start,
+    output [31:0]pc_out,Ins,write_data,rd_1,rd_2,out,dmwrdata,
+    output[4:0] write_reg,reg1,reg2,
+    output alusrc,mtr,
+    output [1:0] alop
 );
 
 // When input start is zero, cpu should reset
@@ -31,16 +35,17 @@ module SingleCycleCPU(
 // TODO: connect wire to realize SingleCycleCPU
 // The following provides simple template,
 parameter width=32; 
-wire addVal=32'h04;
+
 
 wire [width-1:0] PC_in,PC_out,addOut,immAddress,rd1,rd2;
 wire [width-1:0] shiftOut,immOut,inst,Operand2,ALUOut,mem_read_data,reg_write_data;
-wire branch,memRead,memtoReg,memWrite,ALUSrc,regWrite,zero,funct7;
+wire branch,memRead,memtoReg,memWrite,ALUSrc,regWrite,zero;
 wire [1:0] ALUOp;
-wire [6:0] opcode;
+wire [6:0] opcode,funct7;
 wire [3:0] ALUCtl;
 wire [2:0] funct3;
 wire [4:0] readReg1,readReg2,writeReg;
+
 
 PC m_PC(
     .clk(clk),
@@ -51,7 +56,7 @@ PC m_PC(
 
 Adder m_Adder_1(
     .a(PC_out),
-    .b(addVal),
+    .b(32'h4),
     .sum(addOut)
 );
 
@@ -60,6 +65,7 @@ InstructionMemory m_InstMem(
     .inst(inst)
 );
 
+assign Ins = inst;
 assign opcode = inst[6:0];
 
 Control m_Control(
@@ -156,5 +162,18 @@ Mux2to1 #(.size(32)) m_Mux_WriteData(
     .s1(mem_read_data),
     .out(reg_write_data)
 );
+    
+    assign pc_out = PC_out;
+    assign write_reg = writeReg;
+    assign write_data = reg_write_data;
+    assign rd_1 = rd1;
+    assign rd_2 = Operand2;
+    assign reg1 = readReg1;
+    assign reg2 = readReg2;
+    assign out = ALUOut;
+    assign alusrc = ALUSrc;
+    assign mtr = memtoReg;
+    assign alop = ALUOp;
+    assign dmwrdata = rd2;
     
 endmodule
